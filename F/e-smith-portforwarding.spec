@@ -1,8 +1,8 @@
 Summary: portforwarding panel for SME Server
 %define name e-smith-portforwarding
 Name: %{name}
-%define version 1.1.2
-%define release 02
+%define version 1.2.0
+%define release 01
 Version: %{version}
 Release: %{release}
 License: GPL
@@ -21,6 +21,9 @@ AutoReqProv: no
 Adds a Port Forwarding panel to the SME server-manager.
 
 %changelog
+* Thu Mar 16 2006 Gordon Rowell <gordonr@gormand.com.au> 1.2.0-01
+- Roll stable stream version. [SME: 1016]
+
 * Wed Nov 30 2005 Gordon Rowell <gordonr@gormand.com.au> 1.1.2-02
 - Bump release number only
 
