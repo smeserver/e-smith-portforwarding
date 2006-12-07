@@ -2,13 +2,13 @@ Summary: portforwarding panel for SME Server
 %define name e-smith-portforwarding
 Name: %{name}
 %define version 1.2.0
-%define release 01
+%define release 2
 Version: %{version}
-Release: %{release}
+Release: %smerelease %{release}
+Packager: %{_packager}
 License: GPL
 Group: Networking/Daemons
 Source: %{name}-%{version}.tar.gz
-Packager: e-smith developers <bugs@e-smith.com>
 BuildRoot: /var/tmp/%{name}-%{version}-%{release}-buildroot
 BuildArchitectures: noarch
 Requires: e-smith-base
@@ -21,6 +21,10 @@ AutoReqProv: no
 Adds a Port Forwarding panel to the SME server-manager.
 
 %changelog
+* Thu Dec 07 2006 Shad L. Lords <slords@mail.com>
+- Update to new release naming.  No functional changes.
+- Make Packager generic
+
 * Thu Mar 16 2006 Gordon Rowell <gordonr@gormand.com.au> 1.2.0-01
 - Roll stable stream version. [SME: 1016]
 
