@@ -4,8 +4,7 @@ Name: %{name}
 %define version 1.2.0
 %define release 2
 Version: %{version}
-Release: %smerelease %{release}
-Packager: %{_packager}
+Release: %{release}%{?dist}
 License: GPL
 Group: Networking/Daemons
 Source: %{name}-%{version}.tar.gz
@@ -14,6 +13,7 @@ BuildArchitectures: noarch
 Requires: e-smith-base
 Requires: e-smith-packetfilter >= 1.13.0-13
 Requires: e-smith-lib >= 1.15.1-19
+BuildRequires: e-smith-devtools >= 1.13.1-03
 Obsoletes: e-smith-ipportfw dmc-mitel-portforwarding
 AutoReqProv: no
 
@@ -21,6 +21,9 @@ AutoReqProv: no
 Adds a Port Forwarding panel to the SME server-manager.
 
 %changelog
+* Sun Apr 29 2007 Shad L. Lords <slords@mail.com>
+- Clean up spec so package can be built by koji/plague
+
 * Thu Dec 07 2006 Shad L. Lords <slords@mail.com>
 - Update to new release naming.  No functional changes.
 - Make Packager generic
