@@ -1,0 +1,225 @@
+diff -Nur -x '*.orig' -x '*.rej' e-smith-portforwarding-1.2.0/root/etc/e-smith/db/configuration/migrate/10migrateMasqForwards mezzanine_patched_e-smith-portforwarding-1.2.0/root/etc/e-smith/db/configuration/migrate/10migrateMasqForwards
+--- e-smith-portforwarding-1.2.0/root/etc/e-smith/db/configuration/migrate/10migrateMasqForwards	1969-12-31 17:00:00.000000000 -0700
++++ mezzanine_patched_e-smith-portforwarding-1.2.0/root/etc/e-smith/db/configuration/migrate/10migrateMasqForwards	2007-06-26 09:46:46.000000000 -0600
+@@ -0,0 +1,19 @@
++{
++    my %FDB;
++    foreach my $proto ('TCP', 'UDP') {
++        $FDB{$proto} = esmith::ConfigDB->open("portforward_" . lc($proto))
++            || die "Can't open portforward" . lc($proto) . " database: $!\n";
++
++        my %rules = split ',', $DB->get_prop_and_delete('masq', "${proto}Forwards")
++            || next;
++
++        foreach my $entry (keys %rules) {
++            my %props = ( type => 'forward' );
++            my ($addr, $port) = split ':', $rules{$entry};
++            $props{'DestHost'} = $addr;
++            $props{'DestPort'} = $port if $port;
++
++            $FDB{$proto}->new_record($entry, \%props);
++        }
++    }
++}
+diff -Nur -x '*.orig' -x '*.rej' e-smith-portforwarding-1.2.0/root/etc/e-smith/templates/etc/rc.d/init.d/masq/91adjustPortForward mezzanine_patched_e-smith-portforwarding-1.2.0/root/etc/e-smith/templates/etc/rc.d/init.d/masq/91adjustPortForward
+--- e-smith-portforwarding-1.2.0/root/etc/e-smith/templates/etc/rc.d/init.d/masq/91adjustPortForward	2005-07-14 10:20:09.000000000 -0600
++++ mezzanine_patched_e-smith-portforwarding-1.2.0/root/etc/e-smith/templates/etc/rc.d/init.d/masq/91adjustPortForward	2007-06-26 09:46:46.000000000 -0600
+@@ -6,14 +6,18 @@
+     $OUT .= "   sed -n '3s/ .*//p')\n";
+     $OUT .= "    /sbin/iptables --table nat --new-chain $pf_chain\n";
+ 
++    my %FDB;
++
+     foreach my $protocol (qw(tcp udp))
+     {
+         my $uproto = uc $protocol;
+-        my $propname = $uproto . "Forwards";
+-        my %forwards = split(/,/, $masq{$propname} || '');
++        $FDB{$protocol} = esmith::ConfigDB->open("portforward_$protocol")
++                || die "Can't open portforward_$protocol database: $!\n";
++
++        foreach my $entry ( $FDB{$protocol}->get_all ) {
+-        foreach my $port (keys %forwards)
+-        {
+-            my ($ip, $dport) = split(/:/, $forwards{$port});
++            my $port = $entry->key;
++            my $ip = $entry->prop('DestHost');
++            my $dport = $entry->prop('DestPort');
+             $port =~ s/-/:/;
+ 
+ 	    # Map canonical localhost back to our current external IP	
+diff -Nur -x '*.orig' -x '*.rej' e-smith-portforwarding-1.2.0/root/etc/e-smith/web/functions/portforwarding mezzanine_patched_e-smith-portforwarding-1.2.0/root/etc/e-smith/web/functions/portforwarding
+--- e-smith-portforwarding-1.2.0/root/etc/e-smith/web/functions/portforwarding	2003-03-31 11:48:05.000000000 -0700
++++ mezzanine_patched_e-smith-portforwarding-1.2.0/root/etc/e-smith/web/functions/portforwarding	2007-06-26 09:46:01.000000000 -0600
+@@ -42,7 +42,7 @@
+ 
+     <!-- page 0 -->
+     <page 
+-        name="Front"
++        name="First"
+         pre-event="print_status_message()">
+         <description>FIRST_PAGE_DESCRIPTION</description>
+ 
+diff -Nur -x '*.orig' -x '*.rej' e-smith-portforwarding-1.2.0/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm mezzanine_patched_e-smith-portforwarding-1.2.0/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm
+--- e-smith-portforwarding-1.2.0/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm	2005-03-17 19:31:37.000000000 -0700
++++ mezzanine_patched_e-smith-portforwarding-1.2.0/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm	2007-06-26 09:46:01.000000000 -0600
+@@ -45,6 +45,10 @@
+ our $VERSION = sprintf '%d.%03d', q$Revision: 1.38 $ =~ /: (\d+).(\d+)/;
+ our $db = esmith::ConfigDB->open
+     || die "Can't open configuration database: $!\n";
++our $tcp_db = esmith::ConfigDB->open('portforward_tcp')
++    || die "Can't open portforward_tcp database: $!\n";
++our $udp_db = esmith::ConfigDB->open('portforward_udp')
++    || die "Can't open portforward_udp database: $!\n";
+ 
+ =head1 NAME
+ 
+@@ -102,16 +106,14 @@
+     my $self = shift;
+     my $q = $self->cgi;
+ 
+-    my $masq = $db->get('masq')
+-        || return $self->error('ERR_NO_MASQ_RECORD');
+     my $empty = 0;
+-    my %tcpforwards = split /,/, $masq->prop('TCPForwards');
+-    my %udpforwards = split /,/, $masq->prop('UDPForwards');
+-    $empty = 1 if not %tcpforwards and not %udpforwards;
++    my @tcpforwards = $tcp_db->get_all;
++    my @udpforwards = $udp_db->get_all;
++    $empty = 1 if not @tcpforwards and not @udpforwards;
+ 
+     my %forwards = ();
+-    $forwards{TCP} = \%tcpforwards;
+-    $forwards{UDP} = \%udpforwards;
++    $forwards{TCP} = \@tcpforwards;
++    $forwards{UDP} = \@udpforwards;
+ 
+     my $systemmode = $db->get_value('SystemMode');
+ 
+@@ -165,10 +167,11 @@
+             ), "\n        ",
+         );
+         foreach my $proto (sort keys %forwards) {
+-            if (%{ $forwards{$proto} }) {
+-                foreach my $sport (keys %{ $forwards{$proto} }) {
+-                    my ($dhost, $dport) = split /:/, 
+-                                          $forwards{$proto}->{$sport};
++            if (@{ $forwards{$proto} }) {
++                foreach my $entry (@{ $forwards{$proto} }) {
++                    my $sport = $entry->key;
++                    my $dhost = $entry->prop('DestHost');
++                    my $dport = $entry->prop('DestPort') || '';
+                     print $q->Tr(
+                         esmith::cgi::genSmallCell($q, $proto),
+                             "        ",
+@@ -248,9 +251,15 @@
+     }
+     # Now, lets screen any duplicates. 
+     my $protocol = $q->param('protocol');
++    my @forwards = ();
++
+     # Grab the existing rules for this protocol.
+-    my %forwards = split /,/, $db->get_prop('masq', "${protocol}Forwards");
+-    foreach my $psport (keys %forwards)
++    if ($protocol eq 'TCP') {
++        @forwards = map { $_->key } $tcp_db->get_all;
++    } elsif ($protocol eq 'UDP') {
++        @forwards = map { $_->key } $udp_db->get_all;
++    }
++    foreach my $psport (@forwards)
+     {
+         if ($self->detect_collision($sport, $psport))
+         {
+@@ -558,7 +567,7 @@
+     # If the cancel button was pressed, just go back to the start page.
+     if ($q->param("cancel")) {
+         $self->debug_msg("the cancel button was pressed");
+-        $self->wherenext("Front");
++        $self->wherenext("First");
+     }
+     else {
+         # Save the changes. 
+@@ -577,74 +586,27 @@
+         $self->debug_msg("destination_host is $dhost");
+ 
+         my $whichforwards = "";
++        my $fdb;
+         if ($proto eq 'TCP') {
+-            $whichforwards = 'TCPForwards';
++            $fdb = $tcp_db;
+         }
+         else {
+-            $whichforwards = 'UDPForwards';
++            $fdb = $udp_db;
+         }
+ 
+-        # Port forwarding rules are properties of the masq record under a key
+-        # of TCPForwards, with each one separated by commas, and the format of
+-        # each being, "sport,host1:dport"
+-        my $masq = $db->get('masq') 
+-            || return $self->error('ERR_NO_MASQ_RECORD');
+-        $self->debug_msg("fetching $whichforwards property from masq record");
+-        $$whichforwards = $masq->prop($whichforwards);
+-        $self->debug_msg("the db property is $$whichforwards");
+-
+         if ($mode eq 'create') {
+             $self->debug_msg("we are in create mode");
+-            my $newrule = "$sport,$dhost:$dport";
+-            $self->debug_msg("new rule is $newrule");
+-            if ($$whichforwards) {
+-                # Look for an identical rule. 
+-                my $pattern; ($pattern = $newrule) =~ s/\./\\./g;
+-                $self->debug_msg("looking for a dup rule; pattern $pattern");
+-                if ($$whichforwards =~ /$pattern/) {
+-                    $self->debug_msg("found a duplicate rule");
+-                    return $self->error('ERR_DUPRULE');
+-                }
+-                $$whichforwards .= ',';
+-            }
+-            else {
+-                $$whichforwards = '';
+-            }
+-            $$whichforwards .= $newrule;
+-            $self->debug_msg("\$\$whichforwards is now $$whichforwards");
++            my $entry = $fdb->get($sport) || $fdb->new_record($sport, { type => 'forward' });
++            $entry->set_prop('DestHost', $dhost);
++            $entry->set_prop('DestPort', $dport) if $dport;
+         }
+         elsif ($mode eq 'remove') {
+             $self->debug_msg("we are in remove mode");
+-            if (! $$whichforwards) {
+-                # The category is empty. Nothing to remove.
+-                return $self->error('ERR_CANNOT_REMOVE_NORULE');
+-            }
+-            my %forwards = split /,/, $$whichforwards;
+-            $$whichforwards = "";
+-            my $found = FALSE;
+-            foreach my $psport (keys %forwards) {
+-                my ($pdhost, $pdport) = split /:/, $forwards{$psport};
+-                $self->debug_msg("looping on $psport, $pdhost, $pdport");
+-                if (($sport eq $psport) &&
+-                    ($dport eq $pdport) &&
+-                    ($dhost eq $pdhost))
+-                {
+-                    $found = TRUE;
+-                    $self->debug_msg("found the rule to remove");
+-                }
+-                else {
+-                    $$whichforwards .= "$psport,$pdhost:$pdport,";
+-                    $self->debug_msg("\$\$whichforwards is now $$whichforwards");
+-                }
+-            }
+-            if (! $found) {
+-                return $self->error('ERR_CANNOT_REMOVE_NORULE');
+-            }
+-            $$whichforwards =~ s/,$//;
++            my $entry = $fdb->get($sport);
++            return $self->error('ERR_CANNOT_REMOVE_NORULE') unless $entry;
++            $entry->delete;
+         }
+ 
+-        $masq->set_prop("$whichforwards", $$whichforwards);
+-
+         system("/sbin/e-smith/signal-event",
+                "portforwarding-update") == 0
+            || return $self->error('ERR_NONZERO_RETURN_EVENT');

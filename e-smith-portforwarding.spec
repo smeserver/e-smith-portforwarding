@@ -2,12 +2,13 @@ Summary: portforwarding panel for SME Server
 %define name e-smith-portforwarding
 Name: %{name}
 %define version 1.2.0
-%define release 2
+%define release 3
 Version: %{version}
 Release: %{release}%{?dist}
 License: GPL
 Group: Networking/Daemons
 Source: %{name}-%{version}.tar.gz
+Patch0: e-smith-portforwarding-1.2.0-migratedb.patch
 BuildRoot: /var/tmp/%{name}-%{version}-%{release}-buildroot
 BuildArchitectures: noarch
 Requires: e-smith-base
@@ -21,6 +22,9 @@ AutoReqProv: no
 Adds a Port Forwarding panel to the SME server-manager.
 
 %changelog
+* Tue Jun 26 2007 Shad L. Lords <slords@mail.com> 1.2.0-3
+- Migrate portforwarding to own databases [SME: 54]
+
 * Sun Apr 29 2007 Shad L. Lords <slords@mail.com>
 - Clean up spec so package can be built by koji/plague
 
@@ -386,6 +390,7 @@ Adds a Port Forwarding panel to the SME server-manager.
 
 %prep
 %setup
+%patch0 -p1
 
 %build
 perl createlinks
