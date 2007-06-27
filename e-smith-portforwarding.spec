@@ -2,7 +2,7 @@ Summary: portforwarding panel for SME Server
 %define name e-smith-portforwarding
 Name: %{name}
 %define version 1.2.0
-%define release 3
+%define release 4
 Version: %{version}
 Release: %{release}%{?dist}
 License: GPL
@@ -22,6 +22,9 @@ AutoReqProv: no
 Adds a Port Forwarding panel to the SME server-manager.
 
 %changelog
+* Wed Jun 26 2007 Shad L. Lords <slords@mail.com> 1.2.0-4
+- Ensure portforwarding dbs exists [SME: 54]
+
 * Tue Jun 26 2007 Shad L. Lords <slords@mail.com> 1.2.0-3
 - Migrate portforwarding to own databases [SME: 54]
 
@@ -400,6 +403,14 @@ rm -rf $RPM_BUILD_ROOT
 (cd root   ; find . -depth -print | cpio -dump $RPM_BUILD_ROOT)
 rm -f e-smith-%{version}-filelist
 /sbin/e-smith/genfilelist $RPM_BUILD_ROOT > %{name}-%{version}-filelist
+
+for proto in tcp udp
+do
+    mkdir -p $RPM_BUILD_ROOT/home/e-smith/db
+    touch $RPM_BUILD_ROOT/home/e-smith/db/portforward_$proto
+    echo "%config(noreplace) %attr(0640,root,admin) /home/e-smith/db/portforward_$proto" \
+        >> %{name}-%{version}-filelist
+done
 
 %clean
 rm -rf $RPM_BUILD_ROOT
