@@ -6,7 +6,7 @@ diff -Nur -x '*.orig' -x '*.rej' e-smith-portforwarding-1.2.0/root/etc/e-smith/d
 +    my %FDB;
 +    foreach my $proto ('TCP', 'UDP') {
 +        $FDB{$proto} = esmith::ConfigDB->open("portforward_" . lc($proto))
-+            || die "Can't open portforward" . lc($proto) . " database: $!\n";
++            || esmith::ConfigDB->create("portforward_" . lc($proto));
 +
 +        my %rules = split ',', $DB->get_prop_and_delete('masq', "${proto}Forwards")
 +            || next;
