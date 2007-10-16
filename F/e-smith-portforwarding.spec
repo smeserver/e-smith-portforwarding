@@ -2,13 +2,14 @@ Summary: portforwarding panel for SME Server
 %define name e-smith-portforwarding
 Name: %{name}
 %define version 1.2.0
-%define release 4
+%define release 5
 Version: %{version}
 Release: %{release}%{?dist}
 License: GPL
 Group: Networking/Daemons
 Source: %{name}-%{version}.tar.gz
 Patch0: e-smith-portforwarding-1.2.0-migratedb.patch
+Patch1: e-smith-portforwarding-1.2.0-forward_to_localhost.patch
 BuildRoot: /var/tmp/%{name}-%{version}-%{release}-buildroot
 BuildArchitectures: noarch
 Requires: e-smith-base
@@ -22,6 +23,10 @@ AutoReqProv: no
 Adds a Port Forwarding panel to the SME server-manager.
 
 %changelog
+* Tue Oct 16 2007 Charlie Brady <charlie_brady@mitel.com> 1.2.0-5
+- Use $OUTERNET for target of localhost port forwards, not externalIP
+  pulled from db at template expansion time. [SME: 2760]
+
 * Wed Jun 26 2007 Shad L. Lords <slords@mail.com> 1.2.0-4
 - Ensure portforwarding dbs exists [SME: 54]
 
@@ -394,6 +399,7 @@ Adds a Port Forwarding panel to the SME server-manager.
 %prep
 %setup
 %patch0 -p1
+%patch1 -p1
 
 %build
 perl createlinks
