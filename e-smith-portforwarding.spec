@@ -2,7 +2,7 @@ Summary: portforwarding panel for SME Server
 %define name e-smith-portforwarding
 Name: %{name}
 %define version 1.2.0
-%define release 5
+%define release 6
 Version: %{version}
 Release: %{release}%{?dist}
 License: GPL
@@ -23,6 +23,9 @@ AutoReqProv: no
 Adds a Port Forwarding panel to the SME server-manager.
 
 %changelog
+* Thu Nov 08 2007 Gavin Weight<gweight@mail.com> 1.2.0-6
+- Remove/Fix portforwarding.pm.orig file. [SME: 3526]
+
 * Tue Oct 16 2007 Charlie Brady <charlie_brady@mitel.com> 1.2.0-5
 - Use $OUTERNET for target of localhost port forwards, not externalIP
   pulled from db at template expansion time. [SME: 2760]
