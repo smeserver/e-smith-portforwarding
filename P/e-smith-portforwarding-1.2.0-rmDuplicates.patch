@@ -1,0 +1,74 @@
+diff -Nur -x '*.orig' -x '*.rej' e-smith-portforwarding-1.2.0/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding mezzanine_patched_e-smith-portforwarding-1.2.0/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding
+--- e-smith-portforwarding-1.2.0/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding	2005-03-18 13:31:36.000000000 +1100
++++ mezzanine_patched_e-smith-portforwarding-1.2.0/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding	2008-02-10 10:13:32.000000000 +1100
+@@ -124,22 +124,6 @@
+         <trans>Remove</trans>
+     </entry>
+     <entry>
+-        <base>SOURCE_PORT</base>
+-        <trans>Source Port(s)</trans>
+-    </entry>
+-    <entry>
+-        <base>DESTINATION_HOST</base>
+-        <trans>Destination Host IP Address</trans>
+-    </entry>
+-    <entry>
+-        <base>DESTINATION_PORT</base>
+-        <trans>Destination Port(s)</trans>
+-    </entry>
+-    <entry>
+-        <base>PROTOCOL</base>
+-        <trans>Protocol</trans>
+-    </entry>
+-    <entry>
+         <base>ERR_NO_MASQ_RECORD</base>
+         <trans>Cannot retrieve masq record from the configuration
+         database.</trans>
+diff -Nur -x '*.orig' -x '*.rej' e-smith-portforwarding-1.2.0/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm mezzanine_patched_e-smith-portforwarding-1.2.0/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm
+--- e-smith-portforwarding-1.2.0/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm	2008-02-10 10:17:13.000000000 +1100
++++ mezzanine_patched_e-smith-portforwarding-1.2.0/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm	2008-02-10 10:14:30.000000000 +1100
+@@ -142,22 +142,22 @@
+         print $q->Tr(
+             esmith::cgi::genSmallCell(
+                 $q,
+-                $self->localise('PROTOCOL'),
++                $self->localise('LABEL_PROTOCOL'),
+                 "header"
+             ), "        ",
+             esmith::cgi::genSmallCell(
+                 $q,
+-                $self->localise('SOURCE_PORT'),
++                $self->localise('LABEL_SOURCE_PORT'),
+                 "header"
+             ), "        ",
+             esmith::cgi::genSmallCell(
+                 $q,
+-                $self->localise('DESTINATION_HOST'),
++                $self->localise('LABEL_DESTINATION_HOST'),
+                 "header"
+             ), "        ",
+             esmith::cgi::genSmallCell(
+                 $q,
+-                $self->localise('DESTINATION_PORT'),
++                $self->localise('LABEL_DESTINATION_PORT'),
+                 "header",
+             ), "        ",
+             esmith::cgi::genSmallCell(
+@@ -486,13 +486,13 @@
+ 
+     my $dhost = $self->get_destination_host();
+     foreach my $tablearrayref (
+-            [$self->localise('PROTOCOL')
++            [$self->localise('LABEL_PROTOCOL')
+                 => $q->param('protocol')],
+-            [$self->localise('SOURCE_PORT')
++            [$self->localise('LABEL_SOURCE_PORT')
+                 => $q->param('source_port')],
+-            [$self->localise('DESTINATION_PORT')
++            [$self->localise('LABEL_DESTINATION_PORT')
+                 => $q->param('destination_port') || '&nbsp;'],
+-            [$self->localise('DESTINATION_HOST')
++            [$self->localise('LABEL_DESTINATION_HOST')
+                 => $dhost],
+         )
+     {
