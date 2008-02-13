@@ -30,7 +30,7 @@ Adds a Port Forwarding panel to the SME server-manager.
 - Remove <base> tags now in general [SME: 3913]
 
 * Sun Feb 10 2008 Stephen Noble <support@dungog.net> 1.2.0-7
-- Remove duplicate <base> entries [SME: 3893]
+- Remove duplicate <base> entries [SME: 3888]
 
 * Thu Nov 08 2007 Gavin Weight<gweight@mail.com> 1.2.0-6
 - Remove/Fix portforwarding.pm.orig file. [SME: 3526]
