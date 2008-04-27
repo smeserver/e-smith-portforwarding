@@ -1,0 +1,26 @@
+diff -Nur -x '*.orig' -x '*.rej' e-smith-portforwarding-1.2.0/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding mezzanine_patched_e-smith-portforwarding-1.2.0/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding
+--- e-smith-portforwarding-1.2.0/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding	2008-04-27 18:28:57.000000000 +0200
++++ mezzanine_patched_e-smith-portforwarding-1.2.0/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding	2008-04-27 18:26:51.000000000 +0200
+@@ -90,10 +90,6 @@
+         <trans>Port forwarding</trans>
+     </entry>
+     <entry>
+-        <base>APPLY</base>
+-        <trans>Add</trans>
+-    </entry>
+-    <entry>
+         <base>SUCCESS</base>
+         <trans>Your change to the port forwarding rules has been
+         successfully saved.
+diff -Nur -x '*.orig' -x '*.rej' e-smith-portforwarding-1.2.0/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm mezzanine_patched_e-smith-portforwarding-1.2.0/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm
+--- e-smith-portforwarding-1.2.0/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm	2008-04-27 18:28:57.000000000 +0200
++++ mezzanine_patched_e-smith-portforwarding-1.2.0/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm	2008-04-27 18:27:56.000000000 +0200
+@@ -506,7 +506,7 @@
+     if ($mode eq 'create') {
+         print $q->table({-width => '100%'}, $q->Tr($q->th({-class => 'sme-layout'},
+                     $q->submit(-name => 'apply',
+-                        -value => $self->localise("APPLY")),
++                        -value => $self->localise("ADD")),
+                     '&nbsp;',
+                     $q->submit(-name => 'cancel',
+                         -value => $self->localise("CANCEL")))));
