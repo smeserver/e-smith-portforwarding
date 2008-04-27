@@ -28,7 +28,7 @@ Adds a Port Forwarding panel to the SME server-manager.
 
 %changelog
 * Sun Apr 27 2008 Jonathan Martens <smeserver-contribs@snetram.nl> 1.2.0-9
-- Add common <base> tags to e-smith-formmagick's general
+- Add common <base> tags to e-smith-formmagick's general [SME: 4282]
 
 * Wed Feb 13 2008 Stephen Noble <support@dungog.net> 1.2.0-8
 - Remove <base> tags now in general [SME: 3913]
