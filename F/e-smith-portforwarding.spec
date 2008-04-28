@@ -18,7 +18,7 @@ BuildArchitectures: noarch
 Requires: e-smith-base
 Requires: e-smith-packetfilter >= 1.13.0-13
 Requires: e-smith-lib >= 1.15.1-19
-Requires: e-smith-formmagick >= 1.4.0-9
+Requires: e-smith-formmagick >= 1.4.0-12
 BuildRequires: e-smith-devtools >= 1.13.1-03
 Obsoletes: e-smith-ipportfw dmc-mitel-portforwarding
 AutoReqProv: no
