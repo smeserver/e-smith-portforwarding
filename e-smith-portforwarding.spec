@@ -1,18 +1,15 @@
+# $Id: e-smith-portforwarding.spec,v 1.10 2008/10/07 18:53:00 slords Exp $
+
 Summary: portforwarding panel for SME Server
 %define name e-smith-portforwarding
 Name: %{name}
-%define version 1.2.0
-%define release 9
+%define version 2.0.0
+%define release 1
 Version: %{version}
 Release: %{release}%{?dist}
 License: GPL
 Group: Networking/Daemons
 Source: %{name}-%{version}.tar.gz
-Patch0: e-smith-portforwarding-1.2.0-migratedb.patch
-Patch1: e-smith-portforwarding-1.2.0-forward_to_localhost.patch
-Patch2: e-smith-portforwarding-1.2.0-rmDuplicates.patch
-Patch3: e-smith-portforwarding-1.2.0-tags2general.patch
-Patch4: e-smith-portforwarding-1.2.0-add2general.patch
 BuildRoot: /var/tmp/%{name}-%{version}-%{release}-buildroot
 BuildArchitectures: noarch
 Requires: e-smith-base
@@ -27,6 +24,9 @@ AutoReqProv: no
 Adds a Port Forwarding panel to the SME server-manager.
 
 %changelog
+* Tue Oct 7 2008 Shad L. Lords <slords@mail.com> 2.0.0-1.sme
+- Roll new stream to separate sme7/sme8 trees [SME: 4633]
+
 * Sun Apr 27 2008 Jonathan Martens <smeserver-contribs@snetram.nl> 1.2.0-9
 - Add common <base> tags to e-smith-formmagick's general [SME: 4282]
 
@@ -414,11 +414,6 @@ Adds a Port Forwarding panel to the SME server-manager.
 
 %prep
 %setup
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
 
 %build
 perl createlinks
