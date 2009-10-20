@@ -1,0 +1,19 @@
+diff -Naur e-smith-portforwarding-2.2.0-old/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding e-smith-portforwarding-2.2.0/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding
+--- e-smith-portforwarding-2.2.0-old/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding	2009-10-20 18:06:00.000000000 +0200
++++ e-smith-portforwarding-2.2.0/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding	2009-10-20 18:06:51.000000000 +0200
+@@ -85,6 +85,7 @@
+         <base>LABEL_DESTINATION_HOST</base>
+         <trans>Destination Host IP Address</trans>
+     </entry>
++    <entry>
+         <base>LABEL_RULE_COMMENT</base>
+         <trans>Rule Comment</trans>
+     </entry>
+@@ -93,7 +94,6 @@
+         <trans>Allow Hosts</trans>
+     </entry>
+     <entry>
+-    <entry>
+         <base>Port forwarding</base>
+         <trans>Port forwarding</trans>
+     </entry>
