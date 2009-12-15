@@ -1,0 +1,98 @@
+diff -Naur e-smith-portforwarding-2.2.0-old/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding e-smith-portforwarding-2.2.0/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding
+--- e-smith-portforwarding-2.2.0-old/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding	2009-12-15 21:36:17.000000000 +0100
++++ e-smith-portforwarding-2.2.0/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding	2009-12-15 21:38:40.000000000 +0100
+@@ -162,7 +162,7 @@
+         <base>IN_SERVERONLY</base>
+         <trans>
+             This server is currently in serveronly mode and portforwarding
+-	    is not possible.
++	    is possible only to localhost.
+         </trans>
+     </entry>
+ </lexicon>
+diff -Naur e-smith-portforwarding-2.2.0-old/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm e-smith-portforwarding-2.2.0/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm
+--- e-smith-portforwarding-2.2.0-old/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm	2009-12-15 21:36:17.000000000 +0100
++++ e-smith-portforwarding-2.2.0/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm	2009-12-15 21:37:32.000000000 +0100
+@@ -115,22 +115,13 @@
+     $forwards{TCP} = \@tcpforwards;
+     $forwards{UDP} = \@udpforwards;
+ 
+-    my $systemmode = $db->get_value('SystemMode');
+-
+-    unless ($systemmode eq 'serveronly')
+-    {
+-        print $q->Tr(
+-            $q->td({-colspan => 2},
+-                '<br>' .
+-            $q->a({-class => "button-like",
+-                   -href => "portforwarding?page=0&page_stack=&Next=Create"},
+-               $self->localise('CREATE_RULE'))));
+-    }
++    print $q->Tr(
++        $q->td({-colspan => 2},
++            '<br>' .
++        $q->a({-class => "button-like",
++               -href => "portforwarding?page=0&page_stack=&Next=Create"},
++           $self->localise('CREATE_RULE'))));
+ 
+-    if ($systemmode eq 'serveronly')
+-    {
+-        $empty = 1;
+-    }
+     unless ($empty) {
+         print $q->Tr(
+             $q->td({-colspan => 2}, 
+@@ -215,12 +206,6 @@
+         print '</td></tr>';
+ 
+     }
+-    elsif ($systemmode eq 'serveronly')
+-    {
+-        print $q->Tr(
+-            $q->td({-colspan => 2}, '<br>' .
+-                $self->localise('IN_SERVERONLY')));
+-    }
+     else {
+         print $q->Tr(
+             $q->td({-colspan => 2}, '<br>' .
+@@ -428,7 +413,7 @@
+     $dhost =~ s/^\s+|\s+$//g;
+ 
+     my $localip = $db->get_prop('InternalInterface', 'IPAddress');
+-    my $external_ip = $db->get_prop('ExternalInterface', 'IPAddress');
++    my $external_ip = $db->get_prop('ExternalInterface', 'IPAddress') || $localip;
+ 
+     if ($dhost =~ /^(localhost|127.0.0.1|$localip|$external_ip)$/i)
+     {
+@@ -437,6 +422,12 @@
+         return "OK";
+     }
+ 
++    my $systemmode = $db->get_value('SystemMode');
++
++    if ($systemmode eq 'serveronly') {
++        return $self->localise('IN_SERVERONLY');
++    }
++
+     if (isValidIP($dhost)) {
+         return 'OK';
+     }
+@@ -518,9 +509,6 @@
+ 
+     print $q->p($description);
+ 
+-    my $localip = $db->get_prop('InternalInterface', 'IPAddress');
+-    my $external_ip = $db->get_prop('ExternalInterface', 'IPAddress');
+-
+     my $dhost = $self->get_destination_host();
+     foreach my $tablearrayref (
+             [$self->localise('LABEL_PROTOCOL')
+@@ -675,7 +663,7 @@
+     my $q = $self->{cgi};
+     my $dhost = $q->param("destination_host");
+     my $localip = $db->get_prop('InternalInterface', 'IPAddress');
+-    my $external_ip = $db->get_prop('ExternalInterface', 'IPAddress');
++    my $external_ip = $db->get_prop('ExternalInterface', 'IPAddress') || $localip;
+ 
+     if ($dhost =~ /^(127.0.0.1|$localip|$external_ip)$/i)
+     {
