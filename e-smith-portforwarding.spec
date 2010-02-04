@@ -1,15 +1,17 @@
-# $Id: e-smith-portforwarding.spec,v 1.10 2008/10/07 18:53:00 slords Exp $
+# $Id: e-smith-portforwarding.spec,v 1.11 2010/02/04 17:07:02 filippocarletti Exp $
 
 Summary: portforwarding panel for SME Server
 %define name e-smith-portforwarding
 Name: %{name}
 %define version 2.0.0
-%define release 1
+%define release 2
 Version: %{version}
 Release: %{release}%{?dist}
 License: GPL
 Group: Networking/Daemons
 Source: %{name}-%{version}.tar.gz
+Patch1: e-smith-portforwarding-2.2.0-AllowHosts.patch
+Patch2: e-smith-portforwarding-2.2.0-AllowHosts.patch2
 BuildRoot: /var/tmp/%{name}-%{version}-%{release}-buildroot
 BuildArchitectures: noarch
 Requires: e-smith-base
@@ -24,6 +26,9 @@ AutoReqProv: no
 Adds a Port Forwarding panel to the SME server-manager.
 
 %changelog
+* Thu Feb 4 2010 Filippo Carletti <filippo.carletti@gmail.com> 2.0.0-2.sme
+- Enable port forwards to localhost if mode is serveronly [SME: 1003]
+
 * Tue Oct 7 2008 Shad L. Lords <slords@mail.com> 2.0.0-1.sme
 - Roll new stream to separate sme7/sme8 trees [SME: 4633]
 
@@ -414,6 +419,8 @@ Adds a Port Forwarding panel to the SME server-manager.
 
 %prep
 %setup
+%patch1 -p1
+%patch2 -p1
 
 %build
 perl createlinks

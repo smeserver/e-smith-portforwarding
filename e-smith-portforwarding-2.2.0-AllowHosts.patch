@@ -1,0 +1,210 @@
+diff -Naur e-smith-portforwarding-2.2.0-old/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding e-smith-portforwarding-2.2.0/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding
+--- e-smith-portforwarding-2.2.0-old/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding	2008-10-07 19:36:51.000000000 +0200
++++ e-smith-portforwarding-2.2.0/root/etc/e-smith/locale/en-us/etc/e-smith/web/functions/portforwarding	2009-10-19 19:21:16.000000000 +0200
+@@ -85,6 +85,14 @@
+         <base>LABEL_DESTINATION_HOST</base>
+         <trans>Destination Host IP Address</trans>
+     </entry>
++        <base>LABEL_RULE_COMMENT</base>
++        <trans>Rule Comment</trans>
++    </entry>
++    <entry>
++        <base>LABEL_ALLOW_HOSTS</base>
++        <trans>Allow Hosts</trans>
++    </entry>
++    <entry>
+     <entry>
+         <base>Port forwarding</base>
+         <trans>Port forwarding</trans>
+@@ -96,6 +104,14 @@
+         </trans>
+     </entry>
+     <entry>
++        <base>RULE_COMMENT</base>
++        <trans>Rule Comment</trans>
++    </entry>
++    <entry>
++        <base>ALLOW_HOSTS</base>
++        <trans>Allow Hosts</trans>
++    </entry>
++    <entry>
+         <base>ERR_NO_MASQ_RECORD</base>
+         <trans>Cannot retrieve masq record from the configuration
+         database.</trans>
+@@ -136,6 +152,13 @@
+         </trans>
+     </entry>
+     <entry>
++        <base>ERR_BADAHOST</base>
++        <trans>
++            This does not appear to be a valid IP address list.
++            ie: 192.168.0.1,192.168.1.1/24
++        </trans>
++    </entry>
++    <entry>
+         <base>IN_SERVERONLY</base>
+         <trans>
+             This server is currently in serveronly mode and portforwarding
+diff -Naur e-smith-portforwarding-2.2.0-old/root/etc/e-smith/templates/etc/rc.d/init.d/masq/91adjustPortForward e-smith-portforwarding-2.2.0/root/etc/e-smith/templates/etc/rc.d/init.d/masq/91adjustPortForward
+--- e-smith-portforwarding-2.2.0-old/root/etc/e-smith/templates/etc/rc.d/init.d/masq/91adjustPortForward	2008-10-07 19:36:51.000000000 +0200
++++ e-smith-portforwarding-2.2.0/root/etc/e-smith/templates/etc/rc.d/init.d/masq/91adjustPortForward	2009-10-19 19:21:16.000000000 +0200
+@@ -38,10 +38,24 @@
+             # If this rule is forwarding to localhost, ExternalIP or LocalIP,
+             # then we must allow it on the INPUT chain instead of the FORWARD
+             # chain.
+-            $OUT .= "    adjust_${protocol}_in $port ACCEPT " .
+-			(($ip eq '$OUTERNET') ?
+-			    "Inbound${uproto}_\$\$\n" :
+-			    "Forwarded${uproto}_\$\$ $ip/32\n");
++
++            my $target_chain = (($ip eq '$OUTERNET') ?
++                "Inbound${uproto}_\$\$" : "Forwarded${uproto}_\$\$");
++
++            foreach my $access_type (("Allow", "Deny")) {
++                my $jump_target = (($access_type eq "Allow") ? "ACCEPT" : "denylog");
++                my $host_list = $entry->prop("${access_type}Hosts") || "";
++
++                $host_list = "0.0.0.0/0"
++                    if (($host_list eq "") and ($access_type eq "Allow"));
++
++                foreach my $host (split(',', $host_list)) {
++                    $OUT .= "    /sbin/iptables -A $target_chain";
++                    $OUT .= " --proto $protocol --dport $port \\\n        ";
++                    $OUT .= " --destination $ip" if ($ip ne '$OUTERNET');
++                    $OUT .= " --src $host --jump $jump_target\n";
++                }
++            }
+         }
+     }
+ 
+diff -Naur e-smith-portforwarding-2.2.0-old/root/etc/e-smith/web/functions/portforwarding e-smith-portforwarding-2.2.0/root/etc/e-smith/web/functions/portforwarding
+--- e-smith-portforwarding-2.2.0-old/root/etc/e-smith/web/functions/portforwarding	2008-10-07 19:36:51.000000000 +0200
++++ e-smith-portforwarding-2.2.0/root/etc/e-smith/web/functions/portforwarding	2009-10-19 19:21:16.000000000 +0200
+@@ -82,6 +82,17 @@
+             validation="validate_destination_port()">
+             <label>LABEL_DESTINATION_PORT</label>
+         </field>
++        <field
++            id="rule_comment"
++            type="text">
++            <label>LABEL_RULE_COMMENT</label>
++        </field>
++        <field
++            id="allow_hosts"
++            type="text"
++            validation="validate_allowed_hosts()">
++            <label>LABEL_ALLOW_HOSTS</label>
++        </field>
+ 
+         <subroutine src="print_button('NEXT')" />
+ 
+diff -Naur e-smith-portforwarding-2.2.0-old/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm e-smith-portforwarding-2.2.0/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm
+--- e-smith-portforwarding-2.2.0-old/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm	2008-10-07 19:36:51.000000000 +0200
++++ e-smith-portforwarding-2.2.0/root/usr/lib/perl5/site_perl/esmith/FormMagick/Panel/portforwarding.pm	2009-10-19 19:21:16.000000000 +0200
+@@ -162,8 +162,16 @@
+             ), "        ",
+             esmith::cgi::genSmallCell(
+                 $q,
+-                $self->localise('ACTION'),
++                $self->localise('ALLOW_HOSTS'),
+                 "header",
++            ), "        ",
++            esmith::cgi::genSmallCell(
++                $q,
++                $self->localise('RULE_COMMENT'),
++                 "header",
++            ), "        ",
++            $q->th({-class => "sme-border", -colspan => 2},
++                $self->localise('ACTION')
+             ), "\n        ",
+         );
+         foreach my $proto (sort keys %forwards) {
+@@ -172,6 +180,8 @@
+                     my $sport = $entry->key;
+                     my $dhost = $entry->prop('DestHost');
+                     my $dport = $entry->prop('DestPort') || '';
++                    my $cmmnt  = $entry->prop('Comment') || '';
++                    my $allow  = $entry->prop('AllowHosts') || '';
+                     print $q->Tr(
+                         esmith::cgi::genSmallCell($q, $proto),
+                             "        ",
+@@ -181,13 +191,19 @@
+                             "        ",
+                         esmith::cgi::genSmallCell($q, $dport || '&nbsp'),
+                             "        ",
++                        esmith::cgi::genSmallCell($q, $allow || '&nbsp'),
++                            "        ",
++                        esmith::cgi::genSmallCell($q, $cmmnt || '&nbsp'),
++                            "        ",
+                         esmith::cgi::genSmallCell(
+                             $q,
+                             $q->a({href => $q->url(-absolute => 1)
+                                     . "?page=3&Next=Next&protocol=$proto&"
+                                     . "source_port=$sport&"
+                                     . "destination_host=$dhost&"
+-                                    . "destination_port=$dport"},
++                                    . "destination_port=$dport&"
++                                    . "rule_comment=".CGI::escape($cmmnt)."&"
++                                    . "allow_hosts=$allow"},
+                                 $self->localise("REMOVE"))
+                         ),
+                             "\n        ",
+@@ -429,6 +445,27 @@
+     }
+ }
+ 
++=head2 validate_allowed_hosts
++
++=cut
++
++sub validate_allowed_hosts {
++    my $self = shift;
++    my $ahost = $self->{cgi}->param('allow_hosts');
++    $ahost =~ s/^\s+|\s+$//g;
++
++    my $valid_ahost_list = "OK";
++
++    foreach (split(/[\s,]+/, $ahost)) {
++        my $valid_ipnet = 0;
++        $valid_ipnet = 1 if ($_ =~ m/^\d+\.\d+\.\d+\.\d+$/);
++        $valid_ipnet = 1 if ($_ =~ m/^\d+\.\d+\.\d+\.\d+\/\d+$/);
++        $valid_ahost_list = "ERR_BADAHOST" if ($valid_ipnet != 1);
++    }
++
++    return $valid_ahost_list;
++}
++
+ =head2 display_summary_create
+ 
+ This is a wrapper for the display_summary method, to call it in create mode. 
+@@ -494,6 +531,10 @@
+                 => $q->param('destination_port') || '&nbsp;'],
+             [$self->localise('LABEL_DESTINATION_HOST')
+                 => $dhost],
++            [$self->localise('RULE_COMMENT')
++                => $q->param('rule_comment')],
++            [$self->localise('ALLOW_HOSTS')
++                => $q->param('allow_hosts')],
+         )
+     {
+         print $q->Tr(
+@@ -575,6 +616,9 @@
+         my $sport = $q->param("source_port");
+         my $dport = $q->param("destination_port");
+         my $dhost = $self->get_destination_host();
++        my $cmmnt = $q->param("rule_comment") || "";
++        my $allow = $q->param("allow_hosts") || "";
++        my $deny = (($q->param("allow_hosts")) ? "0.0.0.0/0" : "");
+         $proto =~ s/^\s+|\s+$//g;
+         $sport =~ s/^\s+|\s+$//g;
+         $dport =~ s/^\s+|\s+$//g;
+@@ -599,6 +643,9 @@
+             my $entry = $fdb->get($sport) || $fdb->new_record($sport, { type => 'forward' });
+             $entry->set_prop('DestHost', $dhost);
+             $entry->set_prop('DestPort', $dport) if $dport;
++            $entry->set_prop('Comment', $cmmnt);
++            $entry->set_prop('AllowHosts', $allow);
++            $entry->set_prop('DenyHosts', $deny);
+         }
+         elsif ($mode eq 'remove') {
+             $self->debug_msg("we are in remove mode");
