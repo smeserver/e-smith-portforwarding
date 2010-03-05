@@ -1,4 +1,4 @@
-# $Id: e-smith-portforwarding.spec,v 1.13 2009/12/15 17:17:20 filippocarletti Exp $
+# $Id: e-smith-portforwarding.spec,v 1.14 2010/03/05 20:07:37 slords Exp $
 
 Summary: portforwarding panel for SME Server
 %define name e-smith-portforwarding
@@ -415,7 +415,7 @@ Adds a Port Forwarding panel to the SME server-manager.
 - merged in e-smith-ipportfw-0.1.1-1.noarch.rpm
 - [0.0.1-3]
 * Mon Dec 31 2001 Darrell May <dmay@netsourced.com>
-- added "Shad L. Lords" <lists@lordsfam.net>, e-smith-iportfw 35SetPortFW
+- added "Shad L. Lords" <slords@mail.com>, e-smith-iportfw 35SetPortFW
 - templates-custom fragment supporting dest port addresses
 - updated portforwarding panel to match
 - removed first/last portforward panel bug by adding return on Operation Status
