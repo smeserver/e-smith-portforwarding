@@ -1,0 +1,12 @@
+diff -up e-smith-portforwarding-2.2.0/root/etc/e-smith/templates/etc/rc.d/init.d/masq/91adjustPortForward.filter-source-address2 e-smith-portforwarding-2.2.0/root/etc/e-smith/templates/etc/rc.d/init.d/masq/91adjustPortForward
+--- e-smith-portforwarding-2.2.0/root/etc/e-smith/templates/etc/rc.d/init.d/masq/91adjustPortForward.filter-source-address2	2010-03-11 16:13:44.000000000 +0100
++++ e-smith-portforwarding-2.2.0/root/etc/e-smith/templates/etc/rc.d/init.d/masq/91adjustPortForward	2010-03-11 17:03:50.000000000 +0100
+@@ -33,7 +33,7 @@
+                 $OUT .= " --src $host" unless $host eq '0.0.0.0/0';
+ 
+                 # Set up the remote port to forward to
+-                $OUT .= "-j DNAT --to-destination $ip:$dport\n";
++                $OUT .= " -j DNAT --to-destination $ip:$dport\n";
+ 
+             }
+ 
