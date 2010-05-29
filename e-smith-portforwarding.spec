@@ -1,4 +1,4 @@
-# $Id: e-smith-portforwarding.spec,v 1.16 2010/03/11 16:06:25 snetram Exp $
+# $Id: e-smith-portforwarding.spec,v 1.17 2010/05/29 14:25:34 wellsi Exp $
 
 Summary: portforwarding panel for SME Server
 %define name e-smith-portforwarding
@@ -39,10 +39,11 @@ Adds a Port Forwarding panel to the SME server-manager.
 - Enable port forwards to localhost if mode is serveronly [SME: 1003]
 
 * Tue Oct 20 2009 Filippo Carletti <filippo.carletti@gmail.com> 2.2.0-3.sme
-- Adjust xml entry in locale [SME: 2379]
+- Adjust xml entry in locale [SME: 771]
 
 * Mon Oct 19 2009 Filippo Carletti <filippo.carletti@gmail.com> 2.2.0-2.sme
 - Add option to limit port forwards from source ip [SME: 2379]
+- Add Text Description For Each Port Forwarding [SME: 771]
 
 * Tue Oct 7 2008 Shad L. Lords <slords@mail.com> 2.2.0-1.sme
 - Roll new stream to separate sme7/sme8 trees [SME: 4633]
