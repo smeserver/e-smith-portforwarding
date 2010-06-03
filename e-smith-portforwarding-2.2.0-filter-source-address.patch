@@ -1,0 +1,40 @@
+diff -up e-smith-portforwarding-2.2.0/root/etc/e-smith/templates/etc/rc.d/init.d/masq/91adjustPortForward.filter-source-address e-smith-portforwarding-2.2.0/root/etc/e-smith/templates/etc/rc.d/init.d/masq/91adjustPortForward
+--- e-smith-portforwarding-2.2.0/root/etc/e-smith/templates/etc/rc.d/init.d/masq/91adjustPortForward.filter-source-address	2010-03-09 19:39:01.000000000 +0100
++++ e-smith-portforwarding-2.2.0/root/etc/e-smith/templates/etc/rc.d/init.d/masq/91adjustPortForward	2010-03-09 19:44:36.000000000 +0100
+@@ -17,21 +17,26 @@
+         foreach my $entry ( $FDB{$protocol}->get_all ) {
+             my $port = $entry->key;
+             my $ip = $entry->prop('DestHost');
+-            my $dport = $entry->prop('DestPort');
++            my $dport = $entry->prop('DestPort') || $port;
+             $port =~ s/-/:/;
+ 
+ 	    # Map canonical localhost back to our current external IP	
+             $ip = '$OUTERNET' if ($ip eq 'localhost');
+ 
+-            $OUT .= "    /sbin/iptables --table nat --append $pf_chain " .
+-                "--protocol $protocol \\\n".
+-            # Set up local port to forward
+-            "         --destination-port ${port} -j DNAT " .
+-            # Set up the remote port to forward to
+-                "--to-destination $ip";
+-            # Append the dport if any. 
+-            $OUT .= ":$dport" if $dport;
+-            $OUT .= "\n";
++            my $host_list = $entry->prop("AllowHosts") || '0.0.0.0/0';
++            foreach my $host (split(',', $host_list)) {
++
++                $OUT .= "    /sbin/iptables --table nat --append $pf_chain";
++
++                # Set up local port to forward
++                $OUT .= " --proto $protocol --destination-port ${port}";
++                $OUT .= " --src $host" unless $host eq '0.0.0.0/0';
++
++                # Set up the remote port to forward to
++                $OUT .= "-j DNAT --to-destination $ip:$dport\n";
++
++            }
++
+             # And accept the incoming packets. Use the dport if there is one.
+             ($port = $dport) =~ s/-/:/ if $dport;
+ 
